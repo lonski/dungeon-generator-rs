@@ -1,17 +1,23 @@
 use std::iter::FromIterator;
 use std::fmt;
+use std::cmp;
 
+#[derive(Clone)]
 pub struct Grid {
     tiles: Vec<char>,
     width: usize,
 }
 
 impl Grid {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new_with_fill(width: usize, height: usize, fill: char) -> Self {
         Grid {
-            tiles: (0..width * height).map(|_| '#').collect(),
+            tiles: (0..width * height).map(|_| fill).collect(),
             width: width,
         }
+    }
+
+    pub fn new(width: usize, height: usize) -> Self {
+        Grid::new_with_fill(width, height, '#')
     }
 
     pub fn get(&self, x: usize, y: usize) -> Option<char> {
@@ -37,6 +43,65 @@ impl Grid {
 
     pub fn height(&self) -> usize {
         self.tiles.len() / self.width
+    }
+
+    pub fn connect(
+        &mut self,
+        start_x: usize,
+        start_y: usize,
+        end_x: usize,
+        end_y: usize,
+        fill: char,
+    ) {
+        let mut x = start_x;
+        let mut y = start_y;
+        while x != end_x || y != end_y {
+            let dx = end_x as i32 - x as i32;
+            if dx != 0 {
+                x = (x as i32 + dx / dx.abs()) as usize;
+            }
+            let dy = end_y as i32 - y as i32;
+            if dy != 0 {
+                y = (y as i32 + dy / dy.abs()) as usize;
+            }
+            self.set(x, y, fill);
+        }
+    }
+
+    pub fn fill(&mut self, start_x: usize, start_y: usize, fill: char) {
+        let mut frontier = vec![(start_x, start_y)];
+        while !frontier.is_empty() {
+            let (cx, cy) = frontier.pop().unwrap();
+            self.set(cx, cy, fill);
+            for (nx, ny) in self.neighbours(cx, cy) {
+                if let Some(c) = self.get(nx, ny) {
+                    if c != fill {
+                        frontier.push((nx, ny));
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn count(&self, tile: char) -> usize {
+        self.tiles.iter().filter(|&c| *c == tile).count()
+    }
+
+    fn neighbours(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
+        vec![
+            (x, cmp::max(0, y as i32 - 1) as usize),
+            (x + 1, y),
+            (x, y + 1),
+            (cmp::max(0, x as i32 - 1) as usize, y),
+
+            (x + 1, y + 1),
+            (x + 1, cmp::max(0, y as i32 - 1) as usize),
+            (
+                cmp::max(0, x as i32 - 1) as usize,
+                cmp::max(0, y as i32 - 1) as usize
+            ),
+            (cmp::max(0, x as i32 - 1) as usize, y + 1),
+        ]
     }
 
     fn cord_to_pos(&self, x: usize, y: usize) -> Option<usize> {
