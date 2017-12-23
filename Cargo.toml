@@ -5,3 +5,4 @@ authors = ["Michal Lonski <michal.lonski@nokia.com>"]
 
 [dependencies]
 rand = "*"
+itertools = "*"
