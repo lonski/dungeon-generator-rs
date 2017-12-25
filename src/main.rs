@@ -1,6 +1,6 @@
 extern crate itertools;
+extern crate grid;
 
-mod grid;
 mod point;
 mod line_gen;
 mod room_gen;
@@ -9,7 +9,7 @@ use grid::Grid;
 use room_gen::RoomGenerator;
 
 fn main() {
-    let mut grid = Grid::new_with_fill(30, 30, '#');
+    let mut grid = Grid::new(30, 30);
     let room_gen = RoomGenerator {
         width: 20,
         height: 15,
@@ -18,17 +18,15 @@ fn main() {
         vertex_offset_max: 2,
         vertex_offset_chance: 0.5,
     };
-    generate_room(&mut grid, &room_gen);
-    println!("{}", grid);
-}
 
-fn generate_room(grid: &mut Grid, room_gen: &RoomGenerator) {
     let start_x = 3;
     let start_y = 3;
     for p in room_gen.generate() {
         grid.set((start_x + p.x) as usize, (start_y + p.y) as usize, '.');
     }
     grid.fill(start_x as usize + 5, start_y as usize + 5, '.');
+
+    println!("{}", grid);
 }
 
 #[cfg(test)]
@@ -61,5 +59,14 @@ mod tests {
             println!("{}\n", g);
         }
         assert!(failed.is_empty());
+    }
+
+    fn generate_room(grid: &mut Grid, room_gen: &RoomGenerator) {
+        let start_x = 3;
+        let start_y = 3;
+        for p in room_gen.generate() {
+            grid.set((start_x + p.x) as usize, (start_y + p.y) as usize, '.');
+        }
+        grid.fill(start_x as usize + 5, start_y as usize + 5, '.');
     }
 }
