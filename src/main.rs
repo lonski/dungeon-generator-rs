@@ -7,6 +7,7 @@ mod room_gen;
 
 use grid::Grid;
 use room_gen::RoomGenerator;
+use point::Point;
 
 fn main() {
     let mut grid = Grid::new(30, 30);
@@ -19,12 +20,8 @@ fn main() {
         vertex_offset_chance: 0.5,
     };
 
-    let start_x = 3;
-    let start_y = 3;
-    for p in room_gen.generate() {
-        grid.set((start_x + p.x) as usize, (start_y + p.y) as usize, '.');
-    }
-    grid.fill(start_x as usize + 5, start_y as usize + 5, '.');
+    let room = room_gen.generate();
+    room.draw(&mut grid, &Point::new(3, 3));
 
     println!("{}", grid);
 }
